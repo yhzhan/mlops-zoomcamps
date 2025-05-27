@@ -180,5 +180,13 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 .idea
+models
+mlruns
+*/models
+*/mlruns
+*/mlflow.db
+mlflow.db
+02-experiment-tracking/data
+
 
 Anaconda3-2022.05-Linux-x86_64.sh
