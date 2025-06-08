@@ -187,6 +187,7 @@ mlruns
 */mlflow.db
 mlflow.db
 02-experiment-tracking/data
+*/output
 
 
 Anaconda3-2022.05-Linux-x86_64.sh
