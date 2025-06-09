@@ -3,3 +3,6 @@ mlflow
 scikit-learn
 pandas
 matplotlib
+httpx
+xgboost
+seaborn

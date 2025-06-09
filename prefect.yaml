@@ -3,7 +3,7 @@
 # control along with your flow code.
 
 # Generic metadata about this project
-name: project_mlops
+name: mlops-zoomcamps
 prefect-version: 3.4.5
 
 # build section allows you to manage and build docker images
@@ -21,15 +21,19 @@ pull:
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-- name: null
+- name: nyc_taxi_monthly_flow
   version: null
   tags: []
   description: null
-  schedule: {}
+  schedule:
+    rrule: "FREQ=MONTHLY;INTERVAL=1"          
+    anchor_date: "{{ $NOW }}"  
+    timezone: "UTC" 
   flow_name: null
   entrypoint: null
-  parameters: {}
+  parameters: 
+    run_date: "{{ scheduled_start_time | string }}"
   work_pool:
-    name: null
+    name: mlops-nyc-taxi
     work_queue_name: null
     job_variables: {}
