@@ -6,8 +6,6 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import root_mean_squared_error
 import mlflow
 
-mlflow.set_tracking_uri("sqlite:///mlflow.db")
-mlflow.set_experiment("nyc-taxi-prefect")
 
 @task(log_prints=True)
 def download_data(url: str) -> pd.DataFrame:
