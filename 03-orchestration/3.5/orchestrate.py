@@ -1,5 +1,7 @@
 import pathlib
 import pickle
+import httpx
+import io
 import pandas as pd
 import numpy as np
 import scipy
@@ -8,24 +10,33 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.metrics import root_mean_squared_error
 import mlflow
 import xgboost as xgb
-from prefect import flow, task
+from prefect import flow, task, get_run_logger
 from scipy.sparse import csr_matrix
 
 
-@task(retries=3, retry_delay_seconds=2)
+@task(retries=3, retry_delay_seconds=2, log_prints=True)
 def get_data_path(run_date: str | None = None) -> tuple[str, str]:
+    logger = get_run_logger()
     timestamp = pd.Timestamp(run_date) if run_date else pd.Timestamp.now()
-    train_ts = timestamp - pd.DateOffset(months=2)
-    val_ts = timestamp - pd.DateOffset(months=1)
+    train_ts = timestamp - pd.DateOffset(months=4)
+    val_ts = timestamp - pd.DateOffset(months=3)
     train_url = f"https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_{train_ts.year}-{train_ts.month:02d}.parquet"
     val_url = f"https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_{val_ts.year}-{val_ts.month:02d}.parquet"
+    logger.info(f"Train URL: {train_url}")
+    logger.info(f"Validation URL: {val_url}")
     return (train_url, val_url)
 
 @task(retries=3, retry_delay_seconds=2)
-def read_data(filename: str) -> pd.DataFrame:
+def read_data(url: str) -> pd.DataFrame:
     """Read data into DataFrame"""
-    df = pd.read_parquet(filename)
-
+    headers = {"User-Agent": "Mozilla/5.0 (Prefect-Serverless)"}
+    try:
+        with httpx.Client(timeout=60.0, headers=headers, follow_redirects=True) as c:
+            r = c.get(url)
+            r.raise_for_status()
+            df = pd.read_parquet(io.BytesIO(r.content), engine="pyarrow")
+    except httpx.HTTPStatusError as exc:
+        raise ValueError(f"Download failed ({exc.response.status_code}): {url}") from exc
     df.lpep_dropoff_datetime = pd.to_datetime(df.lpep_dropoff_datetime)
     df.lpep_pickup_datetime = pd.to_datetime(df.lpep_pickup_datetime)
 

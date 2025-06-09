@@ -27,12 +27,11 @@ deployments:
   description: null
   schedule:
     rrule: "FREQ=MONTHLY;INTERVAL=1"          
-    anchor_date: "{{ $NOW }}"  
     timezone: "UTC" 
   flow_name: null
-  entrypoint: null
+  entrypoint: 03-orchestration/3.5/orchestrate.py:main_flow
   parameters: 
-    run_date: "{{ scheduled_start_time | string }}"
+    run_date: null
   work_pool:
     name: mlops-nyc-taxi
     work_queue_name: null
